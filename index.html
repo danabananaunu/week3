@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Database</title>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    table, th, td {
+        border: 1px solid black;
+    }
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+    img {
+        width: 64px;
+        height: 64px;
+    }
+</style>
+</head>
+<body>
+    <h2>User Database</h2>
+    <table id="user-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Image</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Webmaster</td>
+                <td>example1@email.com</td>
+                <td>X</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>User123</td>
+                <td>example2@email.com</td>
+                <td>-</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form id="user-form">
+        <label for="input-username">Username:</label><br>
+        <input type="text" id="input-username" name="username"><br><br>
+        
+        <label for="input-email">Email:</label><br>
+        <input type="text" id="input-email" name="email"><br><br>
+        
+        <input type="checkbox" id="input-admin" name="admin">
+        <label for="input-admin">Admin</label><br><br>
+        
+        <label for="input-image">Upload Image:</label><br>
+        <input type="file" id="input-image" name="image"><br><br>
+        
+        <button type="submit" id="submit-data">Submit</button>
+    </form><br>
+
+    <button id="empty-table">Empty Table</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('user-form');
+            const table = document.getElementById('user-table').getElementsByTagName('tbody')[0];
+            const submitBtn = document.getElementById('submit-data');
+            const emptyBtn = document.getElementById('empty-table');
+
+            let rowCounter = 0;
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                const username = form.elements['username'].value.trim();
+                const email = form.elements['email'].value.trim();
+                const isAdmin = form.elements['admin'].checked;
+                const imageFile = form.elements['image'].files[0];
+                
+                let existingRow = null;
+                Array.from(table.rows).forEach(row => {
+                    if (row.cells[0].textContent === username) {
+                        existingRow = row;
+                    }
+                });
+                
+                if (existingRow) {
+                    existingRow.cells[1].textContent = email;
+                    existingRow.cells[2].textContent = isAdmin ? 'X' : '-';
+                    if (imageFile) {
+                        displayImage(existingRow.cells[3], imageFile);
+                    }
+                } else {
+                    const newRow = table.insertRow();
+                    newRow.id = `row-${rowCounter++}`;
+                    newRow.insertCell().textContent = username;
+                    newRow.insertCell().textContent = email;
+                    newRow.insertCell().textContent = isAdmin ? 'X' : '-';
+                    const imageCell = newRow.insertCell();
+                    displayImage(imageCell, imageFile);
+                    
+                    const actionCell = newRow.insertCell();
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', function() {
+                        table.deleteRow(newRow.rowIndex);
+                    });
+                    actionCell.appendChild(deleteBtn);
+                }
+                form.reset();
+            });
+            
+            function displayImage(cell, file) {
+            if (file instanceof Blob) { // Ensure the file is a valid Blob
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    cell.innerHTML = '';
+                    cell.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                cell.innerHTML = ''; // Clear the cell if the file is not valid
+            }
+        }
+
+            
+            emptyBtn.addEventListener('click', function() {
+                table.innerHTML = ''; 
+            });
+        });
+    </script>
+</body>
+</html>
